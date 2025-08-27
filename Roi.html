@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><title>Relatório ROI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{background:#000;color:#fff;font-family:Arial,sans-serif;}
+    .container{background:#111;margin:36px auto;padding:27px 9px;border-radius:14px;width:99%;max-width:900px;}
+    .charts{display:flex;gap:28px;flex-wrap:wrap;justify-content:space-around;}
+    .chartbox{background:#181818;border-radius:13px;padding:13px;margin:9px 0;flex:1 1 320px;max-width:420px; height:340px;display:flex;flex-direction:column;align-items:center;}
+    .chartbox h4{margin:7px 0 8px 0;color:#ffd700;}
+    .chartbox canvas{width:100%!important;height:85%!important;max-height:265px;}
+    table{width:100%;border-collapse:collapse;margin-top:35px;}
+    th,td{padding:8px 6px;border-bottom:1px solid #232323;}
+    th{background:#232323;color:#ffd700;}
+    tr:nth-child(even){background:#191919;}
+    tr:hover{background:#242424;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Relatório de ROI Mensal</h2>
+  <div class="charts">
+    <div class="chartbox">
+      <h4>Investimento vs. Lucro Bruto</h4>
+      <canvas id="graficoBarra"></canvas>
+    </div>
+    <div class="chartbox">
+      <h4>ROI (%) por Mês</h4>
+      <canvas id="graficoLinha"></canvas>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Mês</th><th>Px</th><th>Total Bruto</th><th>Custo</th><th>Lucro Bruto</th><th>ROI (%)</th>
+      </tr>
+    </thead>
+    <tbody id="tabRoi"></tbody>
+  </table>
+</div>
+<script>
+const url="https://script.google.com/macros/s/AKfycbxHHJJkPbH52JGwJpcAsHpxXlXZhYEji4GsSSXw9SgThHGeKk_WjP-uxuPv3UiQGFUoPg/exec";
+const mesesOrd = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const t = document.getElementById("tabRoi");
+fetch(url+'?aba=ROI').then(r=>r.json()).then(roi=>{
+  t.innerHTML = roi.map(r=>`
+    <tr><td>${r.Mês||r.Mes||""}</td><td>${r.Px||r.px||""}</td>
+    <td>R$ ${r["Total Bruto"]||r.total||""}</td>
+    <td>R$ ${r.Custo||r.custo||""}</td>
+    <td>R$ ${r["Lucro Bruto"]||r.lucro||""}</td>
+    <td style="color:#ffd700"><b>${r["ROI (%)"]||r.roi||""}%</b></td></tr>
+  `).join('');
+  // Gráficos!
+  const meses = roi.map(r=>r.Mês||r.Mes), investimento = roi.map(r=>Number(r.Custo||r.custo)), lucro=roi.map(r=>Number(r["Lucro Bruto"]||r.lucro)), roiPercent=roi.map(r=>Number(r["ROI (%)"]||r.roi));
+  new Chart(document.getElementById('graficoBarra').getContext('2d'), {
+    type:'bar',
+    data:{ labels:meses, datasets:[ {label:'Investimento',backgroundColor:'#13bbe6',data:investimento}, {label:'Lucro Bruto',backgroundColor:'#ffd700',data:lucro}] },
+    options:{ plugins:{legend:{labels:{color:'#fff',font:{weight:'bold'}}}},scales:{x:{ticks:{color:'#eee'}},y:{ticks:{color:'#ffd700'}}}, responsive:true, maintainAspectRatio:false }
+  });
+  new Chart(document.getElementById('graficoLinha').getContext('2d'), {
+    type:'line',
+    data:{labels:meses,datasets:[{label:'ROI (%)',data:roiPercent,borderColor:'#ffd700',backgroundColor:'#ffd70022',tension:.3,fill:true,pointBackgroundColor:'#ffd700'}]},
+    options:{plugins:{legend:{labels:{color:'#ffd700'}}},scales:{x:{ticks:{color:'#eee'}},y:{ticks:{color:'#ffd700'}}},responsive:true,maintainAspectRatio:false}
+  });
+});
+</script>
+</body>
+</html>

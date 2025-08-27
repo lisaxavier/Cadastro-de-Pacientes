@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><title>Consulta de Pacientes</title>
+  <style>
+    body{background:#000;color:#fff;font-family:Arial,sans-serif;}
+    .container{background:#111;margin:40px auto;padding:30px;border-radius:10px;width:97%;max-width:700px;}
+    h2{text-align:center;letter-spacing:1px;}
+    input{width:100%;padding:10px;border-radius:5px;border:none;background:#222;color:#fff;margin-bottom:13px;}
+    table{width:100%;border-collapse:collapse;margin-top:7px;}
+    th,td{padding:9px 6px;border-bottom:1px solid #222;}
+    th{background:#242424;color:#ffd700;}
+    tr:nth-child(even){background:#191919;}
+    tr:hover{background:#232323;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Consulta de Pacientes</h2>
+  <input id="filtro" placeholder="Busque por nome, telefone ou email..."/>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th><th>Telefone</th><th>Email</th><th>Local</th><th>Dia RX</th><th>Valor</th>
+      </tr>
+    </thead>
+    <tbody id="tabConsulta"></tbody>
+  </table>
+</div>
+<script>
+const url = "https://script.google.com/macros/s/AKfycbxHHJJkPbH52JGwJpcAsHpxXlXZhYEji4GsSSXw9SgThHGeKk_WjP-uxuPv3UiQGFUoPg/exec";
+const tbody = document.getElementById("tabConsulta");
+const f = document.getElementById("filtro");
+async function carregaConsulta(filtro="") {
+  let r = await fetch(url+"?aba=Cadastro"+(filtro ? "&filtro="+encodeURIComponent(filtro):""));
+  let lista = await r.json();
+  tbody.innerHTML = lista.map(l=>`<tr>
+    <td>${l.Nome||""}</td><td>${l.Telefone||""}</td><td>${l.Email||""}</td>
+    <td>${l.Local||""}</td><td>${l["Dia RX"]||""}</td><td>${l.Valor||""}</td>
+  </tr>`).join('');
+}
+f.oninput = ()=> carregaConsulta(f.value);
+carregaConsulta();
+</script>
+</body>
+</html>

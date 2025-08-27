@@ -1,0 +1,196 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro Local</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #111;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.2);
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin-top: 5px;
+      background-color: #222;
+      color: #fff;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      background-color: #fff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #ddd;
+    }
+
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.5s, top 0.5s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      top: -70px;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Cadastro de Paciente</h2>
+    <form id="cadastroForm">
+      <label>Local:
+        <select id="local" required>
+          <option value="">Selecione...</option>
+          <option value="Alegre">Alegre</option>
+          <option value="Carmelo">Carmelo</option>
+          <option value="Juliana">Juliana</option>
+        </select>
+      </label>
+      <label>Nome:
+        <input type="text" id="nome" required>
+      </label>
+      <label>Telefone:
+        <input type="text" id="telefone" required>
+      </label>
+      <label>Email:
+        <input type="email" id="email" required>
+      </label>
+      <label>Dia RX:
+        <input type="date" id="diaRX" required>
+      </label>
+      <label>Valor:
+        <input type="number" id="valor" required min="0" max="99" step="1">
+      </label>
+      <button type="submit" id="btnEnviar">Enviar</button>
+    </form>
+    <div class="toast" id="toast">Mensagem</div>
+  </div>
+
+  <script>
+    const form = document.getElementById("cadastroForm");
+    const btn = document.getElementById("btnEnviar");
+    const toast = document.getElementById("toast");
+    const nomeInput = document.getElementById("nome");
+    const telInput = document.getElementById("telefone");
+
+    // Nome maiúsculo e somente letras
+    nomeInput.addEventListener("input", () => {
+      nomeInput.value = nomeInput.value.toUpperCase().replace(/[^A-Z\s]/g, '');
+    });
+
+    // Máscara de telefone
+    telInput.addEventListener("input", () => {
+      let v = telInput.value.replace(/\D/g, '');
+      if(v.length > 10) { // celular
+        v = v.replace(/^(\d{2})(\d)(\d{4})(\d{4}).*/, "($1) $2 $3-$4");
+      } else if(v.length > 9) { // fixo
+        v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+      }
+      telInput.value = v;
+    });
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      btn.disabled = true;
+      btn.innerText = "Enviando...";
+
+      const dados = {
+        local: document.getElementById("local").value,
+        nome: nomeInput.value,
+        telefone: telInput.value,
+        email: document.getElementById("email").value,
+        diaRX: document.getElementById("diaRX").value,
+        valor: document.getElementById("valor").value
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxHHJJkPbH52JGwJpcAsHpxXlXZhYEji4GsSSXw9SgThHGeKk_WjP-uxuPv3UiQGFUoPg/exec", {
+        method: "POST",
+        body: JSON.stringify(dados)
+      })
+      .then(response => response.text())
+      .then(data => {
+        showToast("Dados enviados com sucesso!");
+        form.reset();
+        btn.disabled = false;
+        btn.innerText = "Enviar";
+      })
+      .catch(error => {
+        showToast("Erro ao enviar!");
+        btn.disabled = false;
+        btn.innerText = "Enviar";
+      });
+    });
+  </script>
+</body>
+</html>
